@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.bezkoder.spring.jpa.postgresql.model.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bezkoder.spring.jpa.postgresql.model.Tutorial;
 import com.bezkoder.spring.jpa.postgresql.repository.ProductRepository;
 
 @CrossOrigin(origins = "http://localhost:8081")
@@ -29,65 +29,64 @@ public class ProductController {
 	@Autowired
 	ProductRepository productRepository;
 
-	@GetMapping("/tutorials")
-	public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(required = false) String title) {
+	@GetMapping("/products")
+	public ResponseEntity<List<Product>> getAllProducts(@RequestParam(required = false) String title) {
 		try {
-			List<Tutorial> tutorials = new ArrayList<Tutorial>();
+			List<Product> products = new ArrayList<Product>();
 
 			if (title == null)
-				productRepository.findAll().forEach(tutorials::add);
+				productRepository.findAll().forEach(products::add);
 			else
-				productRepository.findByTitleContaining(title).forEach(tutorials::add);
+				productRepository.findByNameContaining(title).forEach(products::add);
 
-			if (tutorials.isEmpty()) {
+			if (products.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}
 
-			return new ResponseEntity<>(tutorials, HttpStatus.OK);
+			return new ResponseEntity<>(products, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	@GetMapping("/tutorials/{id}")
-	public ResponseEntity<Tutorial> getTutorialById(@PathVariable("id") long id) {
-		Optional<Tutorial> tutorialData = productRepository.findById(id);
+	@GetMapping("/products/{id}")
+	public ResponseEntity<Product> getProductById(@PathVariable("id") long id) {
+		Optional<Product> productData = productRepository.findById(id);
 
-		if (tutorialData.isPresent()) {
-			return new ResponseEntity<>(tutorialData.get(), HttpStatus.OK);
+		if (productData.isPresent()) {
+			return new ResponseEntity<>(productData.get(), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 
-	@PostMapping("/tutorials")
-	public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {
+	@PostMapping("/products")
+	public ResponseEntity<Product> createProduct(@RequestBody Product product) {
 		try {
-			Tutorial _tutorial = productRepository
-					.save(new Tutorial(tutorial.getTitle(), tutorial.getDescription(), false));
-			return new ResponseEntity<>(_tutorial, HttpStatus.CREATED);
+			Product _product = productRepository
+					.save(new Product(product.getName(), product.getDescription()));
+			return new ResponseEntity<>(_product, HttpStatus.CREATED);
 		} catch (Exception e) {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	@PutMapping("/tutorials/{id}")
-	public ResponseEntity<Tutorial> updateTutorial(@PathVariable("id") long id, @RequestBody Tutorial tutorial) {
-		Optional<Tutorial> tutorialData = productRepository.findById(id);
+	@PutMapping("/products/{id}")
+	public ResponseEntity<Product> updateProduct(@PathVariable("id") long id, @RequestBody Product product) {
+		Optional<Product> productData = productRepository.findById(id);
 
-		if (tutorialData.isPresent()) {
-			Tutorial _tutorial = tutorialData.get();
-			_tutorial.setTitle(tutorial.getTitle());
-			_tutorial.setDescription(tutorial.getDescription());
-			_tutorial.setPublished(tutorial.isPublished());
-			return new ResponseEntity<>(productRepository.save(_tutorial), HttpStatus.OK);
+		if (productData.isPresent()) {
+			Product _product = productData.get();
+			_product.setName(product.getName());
+			_product.setDescription(product.getDescription());
+			return new ResponseEntity<>(productRepository.save(_product), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 
-	@DeleteMapping("/tutorials/{id}")
-	public ResponseEntity<HttpStatus> deleteTutorial(@PathVariable("id") long id) {
+	@DeleteMapping("/products/{id}")
+	public ResponseEntity<HttpStatus> deleteProduct(@PathVariable("id") long id) {
 		try {
 			productRepository.deleteById(id);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -96,8 +95,8 @@ public class ProductController {
 		}
 	}
 
-	@DeleteMapping("/tutorials")
-	public ResponseEntity<HttpStatus> deleteAllTutorials() {
+	@DeleteMapping("/products")
+	public ResponseEntity<HttpStatus> deleteAllProducts() {
 		try {
 			productRepository.deleteAll();
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -107,15 +106,15 @@ public class ProductController {
 
 	}
 
-	@GetMapping("/tutorials/published")
-	public ResponseEntity<List<Tutorial>> findByPublished() {
+	@GetMapping("/products/published")
+	public ResponseEntity<List<Product>> findByPublished() {
 		try {
-			List<Tutorial> tutorials = productRepository.findByPublished(true);
+			List<Product> products = productRepository.findByPublished(true);
 
-			if (tutorials.isEmpty()) {
+			if (products.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}
-			return new ResponseEntity<>(tutorials, HttpStatus.OK);
+			return new ResponseEntity<>(products, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
